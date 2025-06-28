@@ -15,11 +15,6 @@ jobs:
       run: |
         Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
 
-    - name: Start cloudflared tunnel
-      run: |
-        Start-Process -NoNewWindow -FilePath ".\cloudflared.exe" -ArgumentList "tunnel", "--url", "rdp://localhost:3389"
-        Start-Sleep -Seconds 10
-
-    - name: Print tunnel info
+    - name: Run cloudflared and show RDP tunnel URL
       run: |
         .\cloudflared.exe tunnel --url rdp://localhost:3389
