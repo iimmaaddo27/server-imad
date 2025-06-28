@@ -1,4 +1,4 @@
-name: Windows RDP via Cloudflare Tunnel
+name: Windows RDP via Cloudflared
 
 on: [workflow_dispatch]
 
@@ -8,19 +8,18 @@ jobs:
     timeout-minutes: 360
 
     steps:
-    - name: إعداد كلمة مرور المسؤول
+    - name: Set admin password
       run: net user runneradmin MySecurePassword123!
 
-    - name: تثبيت cloudflared
+    - name: Download cloudflared
       run: |
-        iwr -outf cloudflared.exe https://bin.equinox.io/c/VdrWdbjqyF/cloudflared-stable-windows-amd64.exe
+        Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
 
-    - name: بدء نفق Cloudflare لـ RDP
+    - name: Start cloudflared tunnel
       run: |
         Start-Process -NoNewWindow -FilePath ".\cloudflared.exe" -ArgumentList "tunnel", "--url", "rdp://localhost:3389"
         Start-Sleep -Seconds 10
 
-    - name: عرض رابط الوصول
+    - name: Print tunnel info
       run: |
         .\cloudflared.exe tunnel --url rdp://localhost:3389
-
