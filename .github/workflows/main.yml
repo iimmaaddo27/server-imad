@@ -1,20 +1,26 @@
-name: Windows RDP via Serveo
+name: Windows RDP via Cloudflare (No Ngrok, No Auth)
 
 on: [workflow_dispatch]
 
 jobs:
   build:
     runs-on: windows-latest
-    timeout-minutes: 360
+    timeout-minutes: 360  # إبقاء الجلسة فعالة 6 ساعات
 
     steps:
-    - name: Set admin password
+    - name: Set password for RDP user
       run: net user runneradmin MySecurePassword123!
 
-    - name: Install OpenSSH
+    - name: Download cloudflared tunnel tool
       run: |
-        Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+        Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "cloudflared.exe"
 
-    - name: Start reverse SSH tunnel to Serveo
+    - name: Start Cloudflare Tunnel to expose RDP (3389)
       run: |
-        ssh -o StrictHostKeyChecking=no -R 3389:localhost:3389 serveo.net
+        echo "Starting tunnel..."
+        Start-Process -NoNewWindow -FilePath ".\cloudflared.exe" -ArgumentList "tunnel", "--url", "rdp://localhost:3389"
+        Start-Sleep -Seconds 10
+
+    - name: Show tunnel URL
+      run: |
+        .\cloudflared.exe tunnel --url rdp://localhost:3389
